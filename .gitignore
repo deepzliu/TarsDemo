@@ -1,0 +1,9 @@
+*.o
+*.d
+*.so
+*.bak
+*.swp
+*.swo
+*.tgz
+*Client
+*Server
