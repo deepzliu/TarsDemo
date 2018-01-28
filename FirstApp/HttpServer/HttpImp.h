@@ -2,7 +2,6 @@
 #define _HttpImp_H_
 
 #include "servant/Application.h"
-#include "Http.h"
 
 /**
  *
