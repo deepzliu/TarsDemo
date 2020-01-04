@@ -1,0 +1,27 @@
+<?xml version='1.0' encoding='utf-8'?>
+<!DOCTYPE hibernate-configuration PUBLIC
+        "-//Hibernate/Hibernate Configuration DTD//EN"
+        "http://www.hibernate.org/dtd/hibernate-configuration-3.0.dtd">
+<hibernate-configuration>
+    <session-factory>
+        <property name="current_session_context_class">thread</property>
+        <property name="hibernate.connection.driver_class">com.mysql.cj.jdbc.Driver</property>
+        <!--<property name="hibernate.connection.url">jdbc:mysql://127.0.0.1:3306/video_test?serverTimezone=UTC&amp;useUnicode=true&amp;characterEncoding=UTF-8</property>-->
+        <property name="hibernate.connection.url">jdbc:mysql://localhost:3306/video_test</property>
+        <property name="hibernate.connection.username">root</property>
+        <property name="hibernate.connection.password">123456</property>
+        <!--用来显示sql语句-->
+        <property name="hibernate.show_sql">true</property>
+        <!--格式化sql语句-->
+        <property name="hibernate.format_sql">true</property>
+		<property name="hibernate.hbm2ddl.auto">create</property>
+        <!--Hibernate方言的配置 不同的数据库之间的sql语句是不同的，可以帮你
+         生成不同数据库的sql语句：
+         下面代表的是使用MySQL的方言的配置，这个配置是必须的
+         -->
+        <!--<property name="hibernate.dialect">org.hibernate.dialect.MySQLDialect</property>-->
+        <property name="hibernate.dialect">org.hibernate.dialect.MySQL5InnoDBDialect</property>
+        <!--路径是用斜杠表示-->
+        <mapping resource="Person.hbm.xml"/>
+    </session-factory>
+</hibernate-configuration>

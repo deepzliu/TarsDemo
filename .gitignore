@@ -7,3 +7,6 @@
 *.tgz
 *Client
 *Server
+target/
+*.un~
+proto/*.h

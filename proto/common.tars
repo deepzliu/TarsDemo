@@ -1,0 +1,29 @@
+module CommonDef
+{
+	enum EN_PLATFORM
+	{
+		PLAT_NONE		= 0,
+		PLAT_WIN		= 1,
+		PLAT_ANDROID	= 2,
+		PLAT_MAC		= 3,
+		PLAT_IOS		= 4,
+		PLAT_IPAD		= 5,
+	};
+
+	enum EN_CLIENT_TYPE
+	{
+		CLIENT_NONE		= 0,
+		CLIENT_APP		= 1,
+		CLIENT_WEB		= 2,
+		CLIENT_H5		= 3,
+		CLIENT_MINI_APP	= 4, // wx mini program
+	};
+
+	struct st_page_context
+	{
+		0 require int index; // current page index, start from 0
+		1 require int total; // total pages
+		2 require int has_next;
+	};
+};
+

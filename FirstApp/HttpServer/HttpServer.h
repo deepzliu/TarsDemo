@@ -26,6 +26,9 @@ public:
      *
      **/
     virtual void destroyApp();
+
+	static void loadCGIConfig();
+	bool procUpdate(const string& command, const string& params, string& result);
 };
 
 extern HttpServer g_app;
