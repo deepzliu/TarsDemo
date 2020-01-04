@@ -8,7 +8,7 @@
 
 struct st_cgi_conf
 {
-	st_cgi_conf():timeout(0){}
+	st_cgi_conf():timeout(200){}
 
 	void init()
 	{
@@ -18,7 +18,7 @@ struct st_cgi_conf
 		timeout = 0;
 	}
 
-	string toString()
+	string toString() const
 	{
 		ostringstream oss;
 		oss << "{name=" << name
@@ -28,6 +28,17 @@ struct st_cgi_conf
 			<< "}";
 		return oss.str();
 	}
+
+	bool isValid() const
+	{
+		if(name.empty() || svrobj.empty())
+		{
+			TLOGDEBUG("cgi conf is invalid, conf: " << toString() << endl);
+			return false;
+		}
+		return true;
+	}
+
 	string name;
 	string svrobj;
 	string svrset;
@@ -63,13 +74,8 @@ public:
 
 private:
 	int parseParams(const string & params, string & cgi_name, HttpApp::st_cgi_req & cgi_req);
-	int set_cgi_resp(int & ret, HttpApp::st_cgi_rsp & cgi_rsp);
-
-	int hello_get(HttpApp::st_cgi_req & req, HttpApp::st_cgi_rsp & rsp);
-	int coro_hello_get(HttpApp::st_cgi_req & req, HttpApp::st_cgi_rsp & rsp);
-
-private:
-	HttpApp::HttpCGIPrx _pPrx;
+	int coroHttpGet(const st_cgi_conf & cgi_conf, HttpApp::st_cgi_req & req, HttpApp::st_cgi_rsp & rsp);
+	int set_cgi_resp(int & ret, HttpApp::st_cgi_rsp & cgi_rsp, vector<char> &buffer);
 };
 
 /////////////////////////////////////////////////////

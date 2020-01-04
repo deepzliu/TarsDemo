@@ -4,47 +4,35 @@
 using namespace std;
 extern map<string, st_cgi_conf> g_map_cgi_conf;
 
-class HttpCGICallBack : public HttpApp::HttpCGIPrxCallback
-{
-public:
-	HttpCGICallBack(){
-		TLOGDEBUG("HttpCGICallBack constructor" << endl);
-	}
-
-    virtual ~HttpCGICallBack(){}
-    virtual void callback_get(tars::Int32 ret,  const HttpApp::st_cgi_rsp& rsp)
-	{
-		TLOGDEBUG("callback_get ret: " << ret 
-					<< ", rsp ret: " << rsp.ret
-					<< ", msg: " << rsp.msg
-					<< endl);
-	}
-
-    virtual void callback_get_exception(tars::Int32 ret)
-	{
-		TLOGDEBUG("callback_get_exception ret: " << ret << endl);
-	}
-};
-
 class HttpCGICoroCallback : public HttpApp::HttpCGICoroPrxCallback
 {
 public:
+	HttpCGICoroCallback(HttpApp::st_cgi_rsp & rsp)
+			:_iException(0), _iRet(0), _rsp(rsp)
+	{
+		_cost = tars::TC_TimeProvider::getInstance()->getNowMs();
+	}
+
     virtual ~HttpCGICoroCallback(){}
 
     virtual void callback_get(tars::Int32 ret,  const HttpApp::st_cgi_rsp& rsp)
     { 
-		_iRet = ret;
+		//_iRet = ret; // 这个错误码不需要
 		_rsp = rsp;
+		_cost = tars::TC_TimeProvider::getInstance()->getNowMs() - _cost;
    	}
     virtual void callback_get_exception(tars::Int32 ret)
 	{
 		_iException = ret;
+		_iRet = CError::E_REMOTE_SVR_FAILED;
+		_cost = tars::TC_TimeProvider::getInstance()->getNowMs() - _cost;
 	}
 
 public:
 	int		_iException;
 	int		_iRet;
-	HttpApp::st_cgi_rsp _rsp;
+	int		_cost;
+	HttpApp::st_cgi_rsp & _rsp;
 };
 typedef tars::TC_AutoPtr<HttpCGICoroCallback> HttpCGICoroCallbackPtr;
 
@@ -53,9 +41,6 @@ void HttpImp::initialize()
 {
     //initialize servant here:
     //...
-	//_pPrx = Application::getCommunicator()->stringToProxy<HttpApp::HttpCGIPrx>("HttpApp.HttpCGIServer.HttpCGIObj");
-	_pPrx = Application::getCommunicator()->stringToProxy<HttpApp::HttpCGIPrx>("HttpApp.HttpCGIServer.HttpCGIObj@tcp -h 9.134.74.246 -p 18601");
-	//LoadConfig();
 }
 
 //////////////////////////////////////////////////////
@@ -68,6 +53,7 @@ void HttpImp::destroy()
 int HttpImp::doRequest(TarsCurrentPtr current, vector<char> &buffer)
 {
 	int ret = 0;
+	int cost = tars::TC_TimeProvider::getInstance()->getNowMs();
 	HttpApp::st_cgi_req cgi_req;
 	HttpApp::st_cgi_rsp cgi_rsp;
 
@@ -89,116 +75,98 @@ int HttpImp::doRequest(TarsCurrentPtr current, vector<char> &buffer)
 		break;
 	}
 
-	//hello_get(cgi_req, cgi_rsp);
-	//coro_hello_get(cgi_req, cgi_rsp);
-
-	map<string, st_cgi_conf>::iterator it = g_map_cgi_conf.begin();
-	for(; it != g_map_cgi_conf.end(); ++it)
+	map<string, st_cgi_conf>::iterator conf_it = g_map_cgi_conf.find(cgi_name);
+	if(conf_it == g_map_cgi_conf.end())
 	{
-		TLOGDEBUG("cgi conf: " << it->second.toString() << endl);
+		TLOGDEBUG("invalid cgi name: " << cgi_name << endl);
+		ret = CError::E_NOT_FOUND_CGI_CONF;
+		break;
 	}
 
-	stringstream ss;
-	ss << "HttpCGI, this is Http."
-	   << "\nOrigin: " << request.getOriginRequest() 
-	   << "\nrequest URL: " << request.getRequestUrl()
-	   << "\nURL: " << request.getURL().getURL() 
-	   << "\nParam: " << request.getRequestParam() 
-	   << endl;
-	TC_HttpResponse rsp;
-	rsp.setResponse(ss.str().c_str(), ss.str().size());
-	rsp.encode(buffer);
+	const st_cgi_conf & cgi_conf = conf_it->second;
+
+	// verify login token // TODO
+	
+	ret = coroHttpGet(cgi_conf, cgi_req, cgi_rsp);
 
 	_BLOCK_END_
 
 	// cgi resp
-	set_cgi_resp(ret, cgi_rsp);
+	set_cgi_resp(ret, cgi_rsp, buffer);
+
+	cost = tars::TC_TimeProvider::getInstance()->getNowMs() - cost;
+	TLOGDEBUG("cgi complete, ret: " << ret 
+		 	  << ", svr ret: " << cgi_rsp.ret 
+		 	  << ", cost: " << cost << endl);
 
 	return 0;
 }
 
-int HttpImp::set_cgi_resp(int & ret, HttpApp::st_cgi_rsp & cgi_rsp)
+int HttpImp::set_cgi_resp(int & ret, HttpApp::st_cgi_rsp & cgi_rsp, vector<char> &buffer)
 {
+	TC_HttpResponse rsp;
+	rsp.setContentType("application/json");
+	if(!cgi_rsp.out_json.empty())
+	{
+		rsp.setResponse(cgi_rsp.out_json.c_str(), cgi_rsp.out_json.size());
+	}
+	else
+	{
+		// TODO: jsonp
+		string out;
+		int errcode = 0;
+		string msg = CError::getErrDesc(ret, &errcode);
+		out = "{\"ret\":" + tars::TC_Common::tostr<int>(errcode) 
+				+ ", \"msg\":\"" + msg + "\"}";
+		rsp.setResponse(out.c_str(), out.size());
+	}
+	rsp.encode(buffer);
+
 	return 0;
 }
 
-
-int HttpImp::hello_get(HttpApp::st_cgi_req & req, HttpApp::st_cgi_rsp & rsp)
+int HttpImp::coroHttpGet(const st_cgi_conf & cgi_conf, HttpApp::st_cgi_req & req, HttpApp::st_cgi_rsp & rsp)
 {
-	req.query["aaa"] = "123";
-	req.query["bbb"] = "456";
+	TLOGDEBUG("in " << __func__ << endl);
 
-	TLOGDEBUG("in hello_get" << endl);
+	int ret = 0;
+	if(!cgi_conf.isValid())
+	{
+		return CError::E_INVALID_CGI_CONF;
+	}
 
-    Communicator comm;
     try
     {
-		HttpApp::HttpCGIPrx prx;
-        comm.stringToProxy("HttpApp.HttpCGIServer.HttpCGIObj@tcp -h 9.134.74.246 -p 18601" , prx);
-
-		// async call not success // TODO
-		HttpApp::HttpCGIPrxCallbackPtr cb = new HttpCGICallBack();
-		//prx->tars_set_timeout(3000);
-		prx->async_get(cb, req);
-		TLOGDEBUG("do async_get" << endl);
-
-		// sync call success
-        /*int ret = prx->get(req, rsp);
-		TLOGDEBUG("do get, ret: " << ret << ", svr ret: " << rsp.ret << ", msg: " << rsp.msg << endl);*/
-    }
-    catch(exception& e)
-    {
-        cerr<<"exception:"<<e.what() <<endl;
-    }
-    catch (...)
-    {
-        cerr<<"unknown exception."<<endl;
-    }
-
-	return 0;
-}
-
-int HttpImp::coro_hello_get(HttpApp::st_cgi_req & req, HttpApp::st_cgi_rsp & rsp)
-{
-	req.query["aaa"] = "123";
-	req.query["bbb"] = "456";
-
-	TLOGDEBUG("in coro_hello_get" << endl);
-
-    //Communicator comm;
-    try
-    {
-		//HttpApp::HttpCGIPrx prx;
-        //comm.stringToProxy("HttpApp.HttpCGIServer.HttpCGIObj@tcp -h 9.134.74.246 -p 18601" , prx);
-
-		//HttpApp::HttpCGIPrx _pPrx;
-		//_pPrx = Application::getCommunicator()->stringToProxy<HttpApp::HttpCGIPrx>("HttpApp.HttpCGIServer.HttpCGIObj");
+		HttpApp::HttpCGIPrx pHttpPrx;
+		pHttpPrx = Application::getCommunicator()->stringToProxy<HttpApp::HttpCGIPrx>(cgi_conf.svrobj);
+		if(cgi_conf.timeout > 0)
+		{
+			pHttpPrx->tars_set_timeout(cgi_conf.timeout);
+		}
 
 	    CoroParallelBasePtr sharedPtr = new CoroParallelBase(1);
 		
-	    HttpCGICoroCallbackPtr cb1 = new HttpCGICoroCallback();
-	    cb1->setCoroParallelBasePtr(sharedPtr);
-	    _pPrx->coro_get(cb1, req);
-
-	    //AServantCoroCallbackPtr cb2 = new AServantCoroCallback();
-	    //cb2->setCoroParallelBasePtr(sharedPtr);
-	    //_pPrx->coro_testStr(cb2, sIn);
+	    HttpCGICoroCallbackPtr httpcb = new HttpCGICoroCallback(rsp);
+	    httpcb->setCoroParallelBasePtr(sharedPtr);
+	    pHttpPrx->coro_get(httpcb, req);
 
 	    coroWhenAll(sharedPtr);
 
-		TLOGDEBUG("coro_get, ret: " << cb1->_iRet << ", exception ret: " << cb1->_iException
-					<< ", svr ret: " << cb1->_rsp.ret << ", msg: " << cb1->_rsp.msg << endl);
+		ret = httpcb->_iRet;
+		TLOGDEBUG("coro_get, ret: " << httpcb->_iRet << ", exception ret: " << httpcb->_iException
+					<< ", svr ret: " << rsp.ret << ", msg: " << rsp.msg 
+					<< ", cost: " << httpcb->_cost << endl);
     }
     catch(exception& e)
     {
-        cerr<<"exception:"<<e.what() <<endl;
+        cerr << "cgi name: " << cgi_conf.name << ", exception:" << e.what() << endl;
     }
     catch (...)
     {
-        cerr<<"unknown exception."<<endl;
+        cerr << "cgi name: " << cgi_conf.name << ", unknown exception." << endl;
     }
 
-	return 0;
+	return ret;
 }
 
 int HttpImp::parseParams(const string & params, string & cgi_name, HttpApp::st_cgi_req & cgi_req)
