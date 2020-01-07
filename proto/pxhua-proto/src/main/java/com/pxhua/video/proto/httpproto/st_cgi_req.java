@@ -123,16 +123,16 @@ public class st_cgi_req {
 	static java.util.Map<String, String> cache_query;
 	static { 
 		cache_query = new java.util.HashMap<String, String>();
-		String var_1 = "";
-		String var_2 = "";
-		cache_query.put(var_1 ,var_2);
+		String var_3 = "";
+		String var_4 = "";
+		cache_query.put(var_3 ,var_4);
 	}
 	static java.util.Map<String, String> cache_cookie;
 	static { 
 		cache_cookie = new java.util.HashMap<String, String>();
-		String var_3 = "";
-		String var_4 = "";
-		cache_cookie.put(var_3 ,var_4);
+		String var_5 = "";
+		String var_6 = "";
+		cache_cookie.put(var_5 ,var_6);
 	}
 	static com.pxhua.video.proto.commondef.st_user_info cache_user_info;
 	static { 

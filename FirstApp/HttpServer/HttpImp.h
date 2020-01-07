@@ -73,9 +73,9 @@ public:
 	int doRequest(TarsCurrentPtr current, vector<char> &buffer);
 
 private:
-	int parseParams(const string & params, string & cgi_name, HttpApp::st_cgi_req & cgi_req);
-	int coroHttpGet(const st_cgi_conf & cgi_conf, HttpApp::st_cgi_req & req, HttpApp::st_cgi_rsp & rsp);
-	int set_cgi_resp(int & ret, HttpApp::st_cgi_rsp & cgi_rsp, vector<char> &buffer);
+	int parseParams(const string & params, string & cgi_name, HttpProto::st_cgi_req & cgi_req);
+	int coroHttpGet(const st_cgi_conf & cgi_conf, HttpProto::st_cgi_req & req, HttpProto::st_cgi_rsp & rsp);
+	int set_cgi_resp(int & ret, HttpProto::st_cgi_rsp & cgi_rsp, vector<char> &buffer);
 };
 
 /////////////////////////////////////////////////////

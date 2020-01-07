@@ -4,10 +4,10 @@
 using namespace std;
 extern map<string, st_cgi_conf> g_map_cgi_conf;
 
-class HttpCGICoroCallback : public HttpApp::HttpCGICoroPrxCallback
+class HttpCGICoroCallback : public HttpProto::HttpCGICoroPrxCallback
 {
 public:
-	HttpCGICoroCallback(HttpApp::st_cgi_rsp & rsp)
+	HttpCGICoroCallback(HttpProto::st_cgi_rsp & rsp)
 			:_iException(0), _iRet(0), _rsp(rsp)
 	{
 		_cost = tars::TC_TimeProvider::getInstance()->getNowMs();
@@ -15,7 +15,7 @@ public:
 
     virtual ~HttpCGICoroCallback(){}
 
-    virtual void callback_get(tars::Int32 ret,  const HttpApp::st_cgi_rsp& rsp)
+    virtual void callback_get(const HttpProto::st_cgi_rsp& rsp)
     { 
 		//_iRet = ret; // 这个错误码不需要
 		_rsp = rsp;
@@ -32,7 +32,7 @@ public:
 	int		_iException;
 	int		_iRet;
 	int		_cost;
-	HttpApp::st_cgi_rsp & _rsp;
+	HttpProto::st_cgi_rsp & _rsp;
 };
 typedef tars::TC_AutoPtr<HttpCGICoroCallback> HttpCGICoroCallbackPtr;
 
@@ -54,8 +54,8 @@ int HttpImp::doRequest(TarsCurrentPtr current, vector<char> &buffer)
 {
 	int ret = 0;
 	int cost = tars::TC_TimeProvider::getInstance()->getNowMs();
-	HttpApp::st_cgi_req cgi_req;
-	HttpApp::st_cgi_rsp cgi_rsp;
+	HttpProto::st_cgi_req cgi_req;
+	HttpProto::st_cgi_rsp cgi_rsp;
 
 	_BLOCK_START_
 
@@ -102,7 +102,7 @@ int HttpImp::doRequest(TarsCurrentPtr current, vector<char> &buffer)
 	return 0;
 }
 
-int HttpImp::set_cgi_resp(int & ret, HttpApp::st_cgi_rsp & cgi_rsp, vector<char> &buffer)
+int HttpImp::set_cgi_resp(int & ret, HttpProto::st_cgi_rsp & cgi_rsp, vector<char> &buffer)
 {
 	TC_HttpResponse rsp;
 	rsp.setContentType("application/json");
@@ -125,7 +125,7 @@ int HttpImp::set_cgi_resp(int & ret, HttpApp::st_cgi_rsp & cgi_rsp, vector<char>
 	return 0;
 }
 
-int HttpImp::coroHttpGet(const st_cgi_conf & cgi_conf, HttpApp::st_cgi_req & req, HttpApp::st_cgi_rsp & rsp)
+int HttpImp::coroHttpGet(const st_cgi_conf & cgi_conf, HttpProto::st_cgi_req & req, HttpProto::st_cgi_rsp & rsp)
 {
 	TLOGDEBUG("in " << __func__ << endl);
 
@@ -137,8 +137,8 @@ int HttpImp::coroHttpGet(const st_cgi_conf & cgi_conf, HttpApp::st_cgi_req & req
 
     try
     {
-		HttpApp::HttpCGIPrx pHttpPrx;
-		pHttpPrx = Application::getCommunicator()->stringToProxy<HttpApp::HttpCGIPrx>(cgi_conf.svrobj);
+		HttpProto::HttpCGIPrx pHttpPrx;
+		pHttpPrx = Application::getCommunicator()->stringToProxy<HttpProto::HttpCGIPrx>(cgi_conf.svrobj);
 		if(cgi_conf.timeout > 0)
 		{
 			pHttpPrx->tars_set_timeout(cgi_conf.timeout);
@@ -169,7 +169,7 @@ int HttpImp::coroHttpGet(const st_cgi_conf & cgi_conf, HttpApp::st_cgi_req & req
 	return ret;
 }
 
-int HttpImp::parseParams(const string & params, string & cgi_name, HttpApp::st_cgi_req & cgi_req)
+int HttpImp::parseParams(const string & params, string & cgi_name, HttpProto::st_cgi_req & cgi_req)
 {
 	vector<string> vec_params = tars::TC_Common::sepstr<string>(params, "&");
 	vector<string> vec_pair;

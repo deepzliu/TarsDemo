@@ -1,0 +1,26 @@
+#include "commondef.tars"
+
+module HttpProto
+{
+	struct st_cgi_req
+	{
+		0 require int mode = 1; // 1: GET, 2: POST
+		1 require map<string, string> query;
+		2 require map<string, string> cookie;
+		3 optional CommonDef::st_user_info user_info;
+		4 optional string client_ip;
+	};
+
+	struct st_cgi_rsp
+	{
+		0 require int ret;
+		1 require string msg;
+		2 require string out_json;
+	};
+
+	interface HttpCGI
+	{
+		void get(st_cgi_req cgi_req, out st_cgi_rsp rsp);
+	};
+};
+

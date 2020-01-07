@@ -1,4 +1,4 @@
-package com.pxhua.video.proto.httpproto.impl;
+package com.pxhua.video;
 
 import com.qq.tars.protocol.annotation.*;
 import com.qq.tars.protocol.tars.annotation.*;
@@ -18,7 +18,7 @@ public class HttpCGIServantImpl implements HttpCGIServant {
 		rsp.setValue(cgi_rsp);
 
 		rsp.value.ret = 100;
-		rsp.value.msg = "message from base server.";
+		rsp.value.msg = "message from a CGI server.";
 	}
 }
 

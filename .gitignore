@@ -9,4 +9,3 @@
 *Server
 target/
 *.un~
-proto/*.h

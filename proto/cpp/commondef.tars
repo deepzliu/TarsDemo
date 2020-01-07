@@ -1,3 +1,7 @@
+/*
+ *	通用的定义
+ */
+
 module CommonDef
 {
 	enum EN_PLATFORM
@@ -16,7 +20,24 @@ module CommonDef
 		CLIENT_APP		= 1,
 		CLIENT_WEB		= 2,
 		CLIENT_H5		= 3,
-		CLIENT_MINI_APP	= 4, // wx mini program
+		CLIENT_WX_MINI	= 4, // wx mini program
+	};
+
+	enum EN_USER_TYPE
+	{
+		USER_NONE			= 0,
+		USER_UID			= 1,
+		USER_WX_OPENID		= 11,
+		USER_WX_UNIONID		= 12, // not support first
+		USER_ALIPAY			= 21, // not support first
+	};
+
+	struct st_user_info
+	{
+		0 require int user_type; // EN_USER_TYPE
+		1 require string user_id;
+		2 require string appid;
+		3 require string access_token;
 	};
 
 	struct st_page_context
@@ -25,5 +46,6 @@ module CommonDef
 		1 require int total; // total pages
 		2 require int has_next;
 	};
+
 };
 

@@ -7,7 +7,8 @@ CONFIG    :=
 STRIP_FLAG:= N
 TARS2CPP_FLAG:= 
 
-INCLUDE   += 
+INCLUDE   += -I../../proto/cpp/
+#INCLUDE   += 
 LIB       += 
 
 #-----------------------------------------------------------------------

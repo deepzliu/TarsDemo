@@ -1,0 +1,28 @@
+#include "commondef.tars"
+
+module Account
+{
+
+	struct st_token_verify_req
+	{
+		0 require int token_mode; // 1: user_info, 2: cookie
+		1 require CommonDef::st_user_info user_info;
+		2 require map<string, string> cookie;
+		3 require int platform; // CommonDef::EN_PLATFORM
+		4 require int client_type; // CommonDef::EN_CLIENT_TYPE
+	};
+
+	struct st_token_verify_rsp
+	{
+		0 require int ret;
+		1 require string msg;
+		2 require long uid;
+	};
+
+	interface Access
+	{
+		void verify(st_token_verify_req req, out st_token_verify_rsp rsp);
+
+		// account transfer // TODO
+	};
+};
