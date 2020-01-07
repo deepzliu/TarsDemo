@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?> 
+<servants>
+	<servant name="BaseObj" protocol="tars" port="18603">
+		<home-api>com.pxhua.video.proto.httpproto.HttpCGIServant</home-api>
+		<home-class>com.pxhua.video.HelloServantImpl</home-class>
+	</servant>
+	
+	<listener>
+		<listener-class>com.pxhua.video.AppStartListener</listener-class>
+	</listener>
+</servants>
+
+
