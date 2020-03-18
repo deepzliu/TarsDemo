@@ -40,6 +40,13 @@ module CommonDef
 		3 require string access_token;
 	};
 
+	struct st_user_detail
+	{
+		0 require long uid;
+		1 require string nick_name;
+		2 require string avatar;
+	};
+
 	struct st_page_context
 	{
 		0 require int index; // current page index, start from 0

@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?> 
+<servants>
+	<servant name="LoginObj" protocol="tars" port="18604">
+		<home-api>com.pxhua.video.proto.httpproto.HttpCGIServant</home-api>
+		<home-class>com.pxhua.video.LoginServantImpl</home-class>
+	</servant>
+	<servant name="LoginVerifyObj" protocol="tars" port="18605">
+		<home-api>com.pxhua.video.proto.account.AccessServant</home-api>
+		<home-class>com.pxhua.video.AccountServantImpl</home-class>
+	</servant>
+
+	<listener>
+		<listener-class>com.pxhua.video.AppStartListener</listener-class>
+	</listener>
+</servants>
+

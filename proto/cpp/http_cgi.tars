@@ -16,6 +16,7 @@ module HttpProto
 		0 require int ret;
 		1 require string msg;
 		2 require string out_json;
+		3 optional map<string, string> headers;
 	};
 
 	interface HttpCGI

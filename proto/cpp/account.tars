@@ -2,8 +2,7 @@
 
 module Account
 {
-
-	struct st_token_verify_req
+	struct st_login_verify_req
 	{
 		0 require int token_mode; // 1: user_info, 2: cookie
 		1 require CommonDef::st_user_info user_info;
@@ -12,7 +11,7 @@ module Account
 		4 require int client_type; // CommonDef::EN_CLIENT_TYPE
 	};
 
-	struct st_token_verify_rsp
+	struct st_login_verify_rsp
 	{
 		0 require int ret;
 		1 require string msg;
@@ -21,7 +20,7 @@ module Account
 
 	interface Access
 	{
-		void verify(st_token_verify_req req, out st_token_verify_rsp rsp);
+		void verify(st_login_verify_req req, out st_login_verify_rsp rsp);
 
 		// account transfer // TODO
 	};

@@ -19,18 +19,18 @@ using namespace std;
 
 namespace Account
 {
-    struct st_token_verify_req : public tars::TarsStructBase
+    struct st_login_verify_req : public tars::TarsStructBase
     {
     public:
         static string className()
         {
-            return "Account.st_token_verify_req";
+            return "Account.st_login_verify_req";
         }
         static string MD5()
         {
             return "9eab7ad0c7111e003b349b6109a1da3d";
         }
-        st_token_verify_req()
+        st_login_verify_req()
         :token_mode(0),platform(0),client_type(0)
         {
         }
@@ -86,27 +86,27 @@ namespace Account
         tars::Int32 platform;
         tars::Int32 client_type;
     };
-    inline bool operator==(const st_token_verify_req&l, const st_token_verify_req&r)
+    inline bool operator==(const st_login_verify_req&l, const st_login_verify_req&r)
     {
         return l.token_mode == r.token_mode && l.user_info == r.user_info && l.cookie == r.cookie && l.platform == r.platform && l.client_type == r.client_type;
     }
-    inline bool operator!=(const st_token_verify_req&l, const st_token_verify_req&r)
+    inline bool operator!=(const st_login_verify_req&l, const st_login_verify_req&r)
     {
         return !(l == r);
     }
 
-    struct st_token_verify_rsp : public tars::TarsStructBase
+    struct st_login_verify_rsp : public tars::TarsStructBase
     {
     public:
         static string className()
         {
-            return "Account.st_token_verify_rsp";
+            return "Account.st_login_verify_rsp";
         }
         static string MD5()
         {
             return "e3e2c290ceec0c08c24111a502d92b13";
         }
-        st_token_verify_rsp()
+        st_login_verify_rsp()
         :ret(0),msg(""),uid(0)
         {
         }
@@ -152,11 +152,11 @@ namespace Account
         std::string msg;
         tars::Int64 uid;
     };
-    inline bool operator==(const st_token_verify_rsp&l, const st_token_verify_rsp&r)
+    inline bool operator==(const st_login_verify_rsp&l, const st_login_verify_rsp&r)
     {
         return l.ret == r.ret && l.msg == r.msg && l.uid == r.uid;
     }
-    inline bool operator!=(const st_token_verify_rsp&l, const st_token_verify_rsp&r)
+    inline bool operator!=(const st_login_verify_rsp&l, const st_login_verify_rsp&r)
     {
         return !(l == r);
     }
@@ -167,7 +167,7 @@ namespace Account
     {
     public:
         virtual ~AccessPrxCallback(){}
-        virtual void callback_verify( const Account::st_token_verify_rsp& rsp)
+        virtual void callback_verify( const Account::st_login_verify_rsp& rsp)
         { throw std::runtime_error("callback_verify() override incorrect."); }
         virtual void callback_verify_exception(tars::Int32 ret)
         { throw std::runtime_error("callback_verify_exception() override incorrect."); }
@@ -207,7 +207,7 @@ namespace Account
                     tars::TarsInputStream<tars::BufferReader> _is;
 
                     _is.setBuffer(msg->response.sBuffer);
-                    Account::st_token_verify_rsp rsp;
+                    Account::st_login_verify_rsp rsp;
                     _is.read(rsp, 2, true);
                     CallbackThreadData * pCbtd = CallbackThreadData::getData();
                     assert(pCbtd != NULL);
@@ -237,7 +237,7 @@ namespace Account
         struct Promiseverify: virtual public TC_HandleBase
         {
         public:
-            Account::st_token_verify_rsp rsp;
+            Account::st_login_verify_rsp rsp;
             map<std::string, std::string> _mRspContext;
         };
         
@@ -354,7 +354,7 @@ namespace Account
                     _is.setBuffer(msg->response.sBuffer);
                     try
                     {
-                        Account::st_token_verify_rsp rsp;
+                        Account::st_login_verify_rsp rsp;
                         _is.read(rsp, 2, true);
                         setResponseContext(msg->response.context);
 
@@ -391,7 +391,7 @@ namespace Account
     {
     public:
         typedef map<string, string> TARS_CONTEXT;
-        void verify(const Account::st_token_verify_req & req,Account::st_token_verify_rsp &rsp,const map<string, string> &context = TARS_CONTEXT(),map<string, string> * pResponseContext = NULL)
+        void verify(const Account::st_login_verify_req & req,Account::st_login_verify_rsp &rsp,const map<string, string> &context = TARS_CONTEXT(),map<string, string> * pResponseContext = NULL)
         {
             tars::TarsOutputStream<tars::BufferWriter> _os;
             _os.write(req, 1);
@@ -409,7 +409,7 @@ namespace Account
             _is.read(rsp, 2, true);
         }
 
-        void async_verify(AccessPrxCallbackPtr callback,const Account::st_token_verify_req &req,const map<string, string>& context = TARS_CONTEXT())
+        void async_verify(AccessPrxCallbackPtr callback,const Account::st_login_verify_req &req,const map<string, string>& context = TARS_CONTEXT())
         {
             tars::TarsOutputStream<tars::BufferWriter> _os;
             _os.write(req, 1);
@@ -417,7 +417,7 @@ namespace Account
             tars_invoke_async(tars::TARSNORMAL,"verify", _os.getByteBuffer(), context, _mStatus, callback);
         }
         
-        promise::Future< AccessPrxCallbackPromise::PromiseverifyPtr > promise_async_verify(const Account::st_token_verify_req &req,const map<string, string>& context)
+        promise::Future< AccessPrxCallbackPromise::PromiseverifyPtr > promise_async_verify(const Account::st_login_verify_req &req,const map<string, string>& context)
         {
             promise::Promise< AccessPrxCallbackPromise::PromiseverifyPtr > promise;
             AccessPrxCallbackPromisePtr callback = new AccessPrxCallbackPromise(promise);
@@ -430,7 +430,7 @@ namespace Account
             return promise.getFuture();
         }
 
-        void coro_verify(AccessCoroPrxCallbackPtr callback,const Account::st_token_verify_req &req,const map<string, string>& context = TARS_CONTEXT())
+        void coro_verify(AccessCoroPrxCallbackPtr callback,const Account::st_login_verify_req &req,const map<string, string>& context = TARS_CONTEXT())
         {
             tars::TarsOutputStream<tars::BufferWriter> _os;
             _os.write(req, 1);
@@ -461,8 +461,8 @@ namespace Account
     {
     public:
         virtual ~Access(){}
-        virtual void verify(const Account::st_token_verify_req & req,Account::st_token_verify_rsp &rsp,tars::TarsCurrentPtr current) = 0;
-        static void async_response_verify(tars::TarsCurrentPtr current, const Account::st_token_verify_rsp &rsp)
+        virtual void verify(const Account::st_login_verify_req & req,Account::st_login_verify_rsp &rsp,tars::TarsCurrentPtr current) = 0;
+        static void async_response_verify(tars::TarsCurrentPtr current, const Account::st_login_verify_rsp &rsp)
         {
             if (current->getRequestVersion() == TUPVERSION )
             {
@@ -499,8 +499,8 @@ namespace Account
                 {
                     tars::TarsInputStream<tars::BufferReader> _is;
                     _is.setBuffer(_current->getRequestBuffer());
-                    Account::st_token_verify_req req;
-                    Account::st_token_verify_rsp rsp;
+                    Account::st_login_verify_req req;
+                    Account::st_login_verify_rsp rsp;
                     if (_current->getRequestVersion() == TUPVERSION)
                     {
                         UniAttribute<tars::BufferWriter, tars::BufferReader>  tarsAttr;

@@ -15,10 +15,10 @@ public class HttpCGIServantImpl implements HttpCGIServant {
         System.out.println(cgi_req.toString());
 
 		st_cgi_rsp cgi_rsp = new st_cgi_rsp();
-		cgi_rsp.ret = 100;
-		cgi_rsp.msg = "message from a CGI server.";
-
 		rsp.setValue(cgi_rsp);
+
+		rsp.value.ret = 100;
+		rsp.value.msg = "message from a CGI server.";
 	}
 }
 

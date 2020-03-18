@@ -106,7 +106,7 @@ namespace HttpProto
         }
         static string MD5()
         {
-            return "d42e5716eca49c942897abfb5af8d00f";
+            return "a0efff653796506cc88bf0ee84209cae";
         }
         st_cgi_rsp()
         :ret(0),msg(""),out_json("")
@@ -124,6 +124,10 @@ namespace HttpProto
             _os.write(ret, 0);
             _os.write(msg, 1);
             _os.write(out_json, 2);
+            if (headers.size() > 0)
+            {
+                _os.write(headers, 3);
+            }
         }
         template<typename ReaderT>
         void readFrom(tars::TarsInputStream<ReaderT>& _is)
@@ -132,6 +136,7 @@ namespace HttpProto
             _is.read(ret, 0, true);
             _is.read(msg, 1, true);
             _is.read(out_json, 2, true);
+            _is.read(headers, 3, false);
         }
         ostream& display(ostream& _os, int _level=0) const
         {
@@ -139,6 +144,7 @@ namespace HttpProto
             _ds.display(ret,"ret");
             _ds.display(msg,"msg");
             _ds.display(out_json,"out_json");
+            _ds.display(headers,"headers");
             return _os;
         }
         ostream& displaySimple(ostream& _os, int _level=0) const
@@ -146,17 +152,19 @@ namespace HttpProto
             tars::TarsDisplayer _ds(_os, _level);
             _ds.displaySimple(ret, true);
             _ds.displaySimple(msg, true);
-            _ds.displaySimple(out_json, false);
+            _ds.displaySimple(out_json, true);
+            _ds.displaySimple(headers, false);
             return _os;
         }
     public:
         tars::Int32 ret;
         std::string msg;
         std::string out_json;
+        map<std::string, std::string> headers;
     };
     inline bool operator==(const st_cgi_rsp&l, const st_cgi_rsp&r)
     {
-        return l.ret == r.ret && l.msg == r.msg && l.out_json == r.out_json;
+        return l.ret == r.ret && l.msg == r.msg && l.out_json == r.out_json && l.headers == r.headers;
     }
     inline bool operator!=(const st_cgi_rsp&l, const st_cgi_rsp&r)
     {

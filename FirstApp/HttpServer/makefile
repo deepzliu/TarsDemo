@@ -8,7 +8,6 @@ STRIP_FLAG:= N
 TARS2CPP_FLAG:= 
 
 INCLUDE   += -I../../proto/cpp/
-#INCLUDE   += 
 LIB       += 
 
 #-----------------------------------------------------------------------
