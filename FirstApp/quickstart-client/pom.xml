@@ -30,7 +30,7 @@
     	<dependency>
     	  <groupId>org.hibernate</groupId>
     	  <artifactId>hibernate-core</artifactId>
-    	  <version>5.3.10.Final</version>
+    	  <version>5.4.24.Final</version>
     	</dependency>
     	<!--添加mysql的jdbc驱动-->
     	<dependency>
@@ -116,7 +116,7 @@
     		<plugin>
     		  <groupId>org.hibernate</groupId>
     		  <artifactId>hibernate-core</artifactId>
-    		  <version>5.3.10.Final</version>
+    		  <version>5.4.24.Final</version>
     		</plugin>
     		<!--添加mysql的jdbc驱动-->
     		<plugin>
